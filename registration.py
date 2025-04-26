@@ -360,7 +360,6 @@ class Graph:
         return vertices
 
 
-    # TODO: Modify this method. You may delete this comment when you are done.
     def compute_depth(self):
         """Computes depth for each vertex in the graph."""
         for v in self.vertices:
@@ -416,58 +415,46 @@ class Graph:
         pre: a valid registration plan exists.
         post: returns a 2D list of strings, where each inner list represents a semester
         """
+        if len(self.vertices) == 0:
+            return []
         courses = []
 
         self.compute_depth()
-        """while self.exists_unvisited():
-            start = None
-            start_depth = -1
-            for v in self.vertices:
-                if v.depth > start_depth and not v.visited:
-                    start = v
-                    start_depth = v.depth
-            s = Stack()
-            s.push(start)
-            start.visited = True
-            while not s.is_empty():
-                prev = s.pop()
-                print(prev)
-                courses.append(prev.label)
-                neighbors = self.get_adjacent_vertices(self.get_index(prev.label))
-                next = None
-                next_depth = -1
-                for j in neighbors:
-                    if not self.vertices[j].visited and self.vertices[j].depth > next_depth:
-                        next = self.vertices[j]
-                        next_depth = self.vertices[j].depth
-                if next is not None:
-                    s.push(next)
-                    next.visited = True
-        print(courses)"""
+        prereq_counts = {}
+        for v in self.vertices:
+            b = False
+            for i in range(len(self.adjacency_matrix)):
+                if self.adjacency_matrix[i][self.get_index(v.label)]:
+                    prereq_counts[v.label] = prereq_counts.get(v.label, 0) + 1
+                    b = True
+            if not b:
+                prereq_counts[v.label] = 0
+        curr_semester = []
         while self.exists_unvisited():
             next = None
             next_depth = -1
             for v in self.vertices:
-                if v.depth > next_depth and not v.visited:
+                if v.depth > next_depth and not v.visited and prereq_counts[v.label] == 0:
                     next = v
                     next_depth = v.depth
-            if next is not None:
-                courses.append(next.label)
+            if next is not None and len(curr_semester) < 4:
                 next.visited = True
-        print(courses)
+                curr_semester.append(next.label)
+            else:
+                for x in curr_semester:
+                    for i in range(len(self.adjacency_matrix[0])):
+                        if self.adjacency_matrix[self.get_index(x)][i]:
+                            prereq_counts[self.vertices[i].label] -= 1
+                courses.append(curr_semester)
+                curr_semester = []
+        courses.append(curr_semester)
         return courses
-    
+
     def exists_unvisited(self):
         for v in self.vertices:
             if not v.visited:
                 return True
         return False
-    
-    def semester(self, list):
-        ans = [[] for _ in range(-((-1 * len(list))//4))]
-        for i, v in enumerate(list):
-            ans[i // 4].append(v)
-        return ans
 
 
 # TODO: Modify this function. You may delete this comment when you are done.
@@ -481,13 +468,20 @@ def main():
     graph = Graph()
 
     # read the number of vertices
+    num_vertices = int(input())
 
     # read the vertices and add them into the graph
+    for _ in range(num_vertices):
+        graph.add_vertex(input())
 
     # read the number of edges
+    num_edges = int(input())
 
     # read the edges and insert them into the graph
     # you will need to call the method to convert them from their labels to their index
+    for _ in range(num_edges):
+        a, b = map(str, input().split())
+        graph.add_edge(graph.get_index(a), graph.get_index(b))
 
     ####################################################################################
     # DO NOT CHANGE ANYTHING BELOW THIS
