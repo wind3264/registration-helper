@@ -385,6 +385,8 @@ class Graph:
 
         post: returns True if there is a cycle and False otherwise.
         """
+        for v in self.vertices:
+            v.visited = False
         start = self.vertices[0]
         s = Stack()
         path = []
@@ -420,6 +422,8 @@ class Graph:
         courses = []
 
         self.compute_depth()
+        for v in self.vertices:
+            v.visited = False
         prereq_counts = {}
         for v in self.vertices:
             b = False
@@ -434,7 +438,7 @@ class Graph:
             next = None
             next_depth = -1
             for v in self.vertices:
-                if v.depth > next_depth and not v.visited and prereq_counts[v.label] == 0:
+                if v.depth >= next_depth and not v.visited and prereq_counts[v.label] == 0:
                     next = v
                     next_depth = v.depth
             if next is not None and len(curr_semester) < 4:
@@ -447,7 +451,11 @@ class Graph:
                             prereq_counts[self.vertices[i].label] -= 1
                 courses.append(curr_semester)
                 curr_semester = []
-        courses.append(curr_semester)
+                if next is not None:
+                    curr_semester.append(next.label)
+                    next.visited = True
+        if len(curr_semester) != 0:
+            courses.append(curr_semester)
         return courses
 
     def exists_unvisited(self):
